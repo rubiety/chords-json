@@ -11,7 +11,7 @@ If the top level is an object (not an array), it should be interpreted as a key-
     composers: ["George Gershwin"],
     styles: ["Medium Swing"],
     time: "4/4",
-    key: "Ab",
+    key: "Bb",
     changes: [
       { section: "A", repeat: 1, bars: [
         ["BbM7","G7"], ["C-7","F7"], ["D-7","G7"], ["C-7","F7"]
@@ -153,11 +153,11 @@ or:
   {"CM7" : ["B/3","C/4","E/4","G/4"]}
 
 
-== Notation
+== TODO: Notation
 
-Chord notation should be as follows: TODO
+Chord notation should be as follows:
 
-== Validation
+== TODO: Validation
 
 This project contains a chords-json.js file which provides a lint tool for verifying your JSON compiles with chords-json.
 
