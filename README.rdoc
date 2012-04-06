@@ -1,0 +1,163 @@
+= Chords JSON
+
+This provides a JSON format for representing sets of chord changes, such as those represented by the iReal B application.
+
+== Full Example
+
+If the top level is an object (not an array), it should be interpreted as a key-value meta data with a "changes" key designating the changes:
+
+  {
+    name: "Rhythm Changes",
+    composers: ["George Gershwin"],
+    styles: ["Medium Swing"],
+    time: "4/4",
+    key: "Ab",
+    changes: [
+      { section: "A", repeat: 1, bars: [
+        ["BbM7","G7"], ["C-7","F7"], ["D-7","G7"], ["C-7","F7"]
+        ["F-7","Bb7"], ["Eb7","Ab7"], {"endings": [
+                                        [["D-7","G7"], ["C-7","F7"]],
+                                        [["C-7","F7"], "Bb6"]
+                                      ]}
+      },
+      { section: "B", bars: [
+        ["D7", "*", "G7", "*",
+         "C7", "*", "F7", "*"]
+      },
+      { section: "A", bars: [
+        ["BbM7","G7"], ["C-7","F7"],  ["D-7","G7"], ["C-7","F7"]
+        ["F-7","Bb7"], ["Eb7","Ab7"], ["C-7","F7"], "Bb6"]
+      },
+    ]
+  }
+
+== Reduced Example (No Meta Data)
+
+If the top level object is an array of objects (not an object), it should be interpreted as the "changes" key in the above example:
+
+  [
+    { section: "A", repeat: 1, bars: [
+      ["BbM7","G7"], ["C-7","F7"], ["D-7","G7"], ["C-7","F7"]
+      ["F-7","Bb7"], ["Eb7","Ab7"], {"endings": [
+                                      [["D-7","G7"], ["C-7","F7"]],
+                                      [["C-7","F7"], "Bb6"]
+                                    ]}
+    },
+    { section: "B", bars: [
+      ["D7", "*", "G7", "*",
+       "C7", "*", "F7", "*"]
+    },
+    { section: "A", bars: [
+      ["BbM7","G7"], ["C-7","F7"],  ["D-7","G7"], ["C-7","F7"]
+      ["F-7","Bb7"], ["Eb7","Ab7"], ["C-7","F7"], "Bb6"]
+    },
+  ]
+
+If the top level object (or the value of the "changes" key in the top-level object) is an array of either arrays or strings, it should be interpreted as the combination of no bars (with no meta-data discerning sections, repeats, etc):
+
+  [
+    ["BbM7","G7"], ["C-7","F7"], ["D-7","G7"], ["C-7","F7"]
+    ["F-7","Bb7"], ["Eb7","Ab7"], ["D-7","G7"], ["C-7","F7"],
+
+    ["BbM7","G7"], ["C-7","F7"], ["D-7","G7"], ["C-7","F7"]
+    ["F-7","Bb7"], ["Eb7","Ab7"], ["C-7","F7"], "Bb6",
+
+    ["D7", "*", "G7", "*",
+     "C7", "*", "F7", "*"],
+
+    ["BbM7","G7"], ["C-7","F7"],  ["D-7","G7"], ["C-7","F7"]
+    ["F-7","Bb7"], ["Eb7","Ab7"], ["C-7","F7"], "Bb6"]
+  ]
+
+
+
+== Example with Voicings (Blues)
+
+Within any set of bars, if the value of a bar is an object, and the key is a chord, the value of that key should be interpreted as a list of notes comprising the voicing for that chord:
+
+  {
+    name: "Blues",
+    time: "4/4",
+    key: "C",
+    changes: [
+      {"C7" : ["C/3","E/3","Bb/3"]},
+      {"F7" : ["C/3","Eb/3","F/3","A/3"]},
+      {"C7" : ["C/3","E/3","G/3","Bb/3"]},
+      [{"G-7" : ["C/3","F/3","Bb/3"]},
+       {"C7"  : ["C/3","E/3","Bb/3"]},
+      {"F7" : ["C/3","Eb/3","F/3","A/3"]},
+      "*",
+      {"C7" : ["C/3","E/3","Bb/3"]},
+      "*"
+      {"G7" : ["G/3","F/3","B/3"]},
+      "*"
+      {"C7" : ["C/3","E/3","Bb/3"]},
+      "*"
+    ]
+  }
+
+== Specifications
+
+=== Top-Level Object
+
+If the top-level is an object (not an array), the following keys are required:
+
+* +changes+: See below.
+
+The following other keys are optional:
+
+* +name+: Name of the set of changes. Value should be a string.
+* +composer+: Name of a single composer. Value should be a string.
+* +composers+: Name of multiple composers. Value should be an array of strings.
+* +style+: Name of a single style. Value should be a string.
+* +styles+: Name of multiple styles, in order of popularity. Value should be an array of strings.
+* +time+: Regular time signature of tunes, like "4/4". Value should be a string containing a slash.
+* +key+: The key the set of changes represents. Value should be a string, one of the twelve keys.
+
+=== Changes Object
+
+The value of the changes object, which can be either set as the value to the "changes" key at the top-level, or implied by the top-level object being an array, should be an array of some kind.
+If the value is an array of objects, each object represents a "grouping", otherwise each entry represents a chord (string), or sequence of chords (array).
+
+==== Change Groupings
+
+Change groupings allow you to group a set of changes in some way. Groupings an are object of key-values whereby none of the keys are chord symbols (reason why is explained later). Available keys for a grouping object are:
+
+* +section+: Takes a string value and defines the conceptual section of the tune ("A", "B", "C", "D")
+* +repeat+: Takes an integer value and defines the number of times the group of changes should repeat (note: a value of one means that the group is played two times - once, then repeated once).
+* +endings+: This can only be specified if the parent object is a grouping that defines a repeat. The value should be an array, the size of the array being equal to the repeat value plus one.
+* +time+: Overrides the time signature specified at the top-level (if any) for the changes within the grouping.
+* +bars+: Defines the chords, each element representing one bar (see "Sequences of Chords" and "Chords" below). The value of this should be array, and the value is the "default" when there is no grouping.
+
+==== Sequences of Chords
+
+A sequence of chords is simply an array of chords (below), used when there is more than one chord in a bar.
+
+The number of elements in a sequence of chords (for a bar) can be no more than the number of beats per measure.
+If the number of elements in a sequence of chords (for a bar) is less than the number of beats per measure, then the elements should be treated as follows, then the chords should be "spread out" to accommodate the full number of beats per measure. If (beats per measure) is a multiple of (size of array), then this is easy. If it is not, then the "spreading out" should default to interpreting the latter chords as lasting shorter than the former. For example for a tune in 4/4, the following:
+
+  ["CM7", "C-7", "F7"]
+
+should effectively be interpreted as:
+
+  ["CM7", "*", "C-7", "F7"]
+
+==== Chords
+
+A chord is either a single string representing the chord (see "Notation" below), or an object with a single key representing the chord and a value being an array of notes specifying the voicing that should be used for that particular chord. Examples:
+
+  "CM7"
+
+or:
+
+  {"CM7" : ["B/3","C/4","E/4","G/4"]}
+
+
+== Notation
+
+Chord notation should be as follows: TODO
+
+== Validation
+
+This project contains a chords-json.js file which provides a lint tool for verifying your JSON compiles with chords-json.
+
